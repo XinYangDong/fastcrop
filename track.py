@@ -203,10 +203,14 @@ def detect(opt):
                     for j, (output, conf) in enumerate(zip(outputs, confs)):
 
                         bboxes = output[0:4]
-                        bboxes[0] -= 10
-                        bboxes[1] -= 10
-                        bboxes[2] += 10
-                        bboxes[3] += 10
+                        if bboxes[0] > 10:
+                            bboxes[0] -= 10
+                        if bboxes[1] > 10:
+                            bboxes[1] -= 10
+                        if bboxes[2] < im0.shape[1] - 10:
+                            bboxes[2] += 10
+                        if bboxes[3] < im0.shape[0] - 10:
+                            bboxes[3] += 10
                         id = output[4]
                         center = (int(((bboxes[0]) + (bboxes[2])) / 2), int(((bboxes[1]) + (bboxes[3])) / 2))
                         roi = (p1[0], p1[1], p2[0], p2[1])
@@ -223,20 +227,13 @@ def detect(opt):
                             annotator.box_label(bboxes, label, color=colors(c, True))
 
                             # 裁切
-                            bboxes_copy = bboxes.copy()
-                            print(bboxes_copy)
+                            #bboxes_copy = bboxes.copy()
+                            #print(bboxes_copy)
                             print(im0.shape)
-                            if bboxes_copy[0] < 0:
-                                bboxes_copy[0] = 0
-                            if bboxes_copy[1] < 0:
-                                bboxes_copy[1] = 0
-                            if bboxes_copy[2] > im0.shape[1]:
-                                bboxes_copy[2] = im0.shape[1]
-                            if bboxes_copy[3] > im0.shape[0]:
-                                bboxes_copy[3] = im0.shape[0]
 
-                            cropImg = raw_frame[int(bboxes_copy[1]):int(bboxes_copy[3]), int(bboxes_copy[0]): int(
-                                bboxes_copy[2])]  # 获取感兴趣区域
+
+                            cropImg = raw_frame[int(bboxes[1]):int(bboxes[3]), int(bboxes[0]): int(
+                                bboxes[2])]  # 获取感兴趣区域
                             # cv2.imwrite('./cropImg/cropImg'+str(track.track_id)+'.png', cropImg)
 
                             croppath = parent_path + "/cut/" + line + "/" + str(frame_idx).zfill(5) + ".jpg"
@@ -252,7 +249,7 @@ def detect(opt):
                                 os.makedirs(dirs)
                             cv2.imwrite(selectImgpath, selectImg)  # 完整图片保存
 
-                            createCsv(file_name, line, os.path.split(selectImgpath)[-1], bboxes_copy, str(class_name))
+                            createCsv(file_name, line, os.path.split(selectImgpath)[-1], bboxes, str(class_name))
                             # text = carplateidentity("./cropImg/cropImg0.png")
                             # colorname = vcrnet("./cropImg/cropImg0.png")
                             # cv2.putText(cropImg, colorname, (int(20), int(40)), 0, 20e-3 * 100, (0, 255, 0), 2)
